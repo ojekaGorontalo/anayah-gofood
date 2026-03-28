@@ -534,6 +534,19 @@
         let menu = [];
         let editingMenuId = null;
 
+        // Helper untuk mendapatkan alamat yang benar (baru atau lama)
+        function getCustomerAddress(order) {
+            // Prioritas: destination_address (format baru) -> customer.address (format lama) -> fallback
+            if (order.destination_address) return order.destination_address;
+            if (order.customer && order.customer.address) return order.customer.address;
+            return 'Alamat tidak tersedia';
+        }
+
+        function getPickupAddress(order) {
+            if (order.pickup_address) return order.pickup_address;
+            return null;
+        }
+
         // ---------- Orders ----------
         function loadOrders() {
             database.ref('Lapak Inayah/orders').on('value', (snapshot) => {
@@ -576,7 +589,7 @@
                 <div style="overflow-x: auto;">
                 <table class="orders-table">
                     <thead>
-                        <tr><th>ID Pesanan</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Aksi</th></tr>
+                        <tr><th>ID Pesanan</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Aksi</th>
                     </thead>
                     <tbody>
             `;
@@ -623,10 +636,23 @@
                     actionButtons = `<button class="action-btn btn-complete" disabled>Selesai</button>`;
                 }
 
+                // Ambil alamat tujuan dengan fungsi helper
+                const destination = getCustomerAddress(order);
+                const pickup = getPickupAddress(order);
+                let addressDisplay = destination;
+                if (pickup) {
+                    addressDisplay = `<span title="Penjemputan: ${pickup}">📦 ${destination}</span>`;
+                }
+
                 tableHTML += `
                     <tr>
                         <td><div class="order-id">${orderId}</div><small>${order.orderDate || new Date(order.timestamp).toLocaleString('id-ID')}</small></td>
-                        <td class="order-customer">${order.customer.name}<small>${order.customer.phone}</small><small>${order.customer.address.substring(0, 50)}${order.customer.address.length > 50 ? '...' : ''}</small>${order.customer.note ? `<small><strong>Catatan:</strong> ${order.customer.note}</small>` : ''}</td>
+                        <td class="order-customer">
+                            ${order.customer.name}
+                            <small>${order.customer.phone}</small>
+                            <small><strong>Tujuan:</strong> ${addressDisplay}</small>
+                            ${order.customer.note ? `<small><strong>Catatan:</strong> ${order.customer.note}</small>` : ''}
+                        </td>
                         <td class="order-items">${itemsHTML}</td>
                         <td>Rp ${formatNumber(order.total)}</td>
                         <td><span class="order-status ${status.class}">${status.text}</span></td>
@@ -635,7 +661,11 @@
                 `;
             });
 
-            tableHTML += '</tbody></table></div>';
+            tableHTML += `
+                    </tbody>
+                </table>
+                </div>
+            `;
             container.innerHTML = tableHTML;
         }
 
