@@ -119,9 +119,18 @@
         
         function renderOrders(orders) {
             let html = `<div style="overflow-x:auto"><table class="orders-table"><thead>\\
-<th>ID</th><th>Customer</th><th>Alamat</th><th>Total</th><th>Status</th><th>Aksi</th>\\
+<th>No. WA / Tanggal</th><th>Customer & Catatan</th><th>Alamat</th><th>Total</th><th>Status</th><th>Aksi</th>\\
 </thead><tbody>`;
             Object.entries(orders).sort((a,b)=>b[1].timestamp - a[1].timestamp).forEach(([id,o]) => {
+                // Kolom pertama: No. WhatsApp + timestamp
+                let phone = o.customer?.phone || '-';
+                let dateStr = o.orderDate || new Date(o.timestamp).toLocaleString('id-ID');
+                let firstCol = `<div><strong>${phone}</strong></div><div><small>${dateStr}</small></div>`;
+                
+                // Kolom customer: nama + catatan
+                let noteHtml = o.customer?.note ? `<br><small style="color:#e67e22;"><i class="fas fa-comment"></i> Catatan: ${escapeHtml(o.customer.note)}</small>` : '';
+                let customerHtml = `<div><strong>${escapeHtml(o.customer?.name)}</strong>${noteHtml}</div>`;
+                
                 let alamat = o.destination_address || o.customer?.address || '-';
                 let mapLink = (o.destination_lat && o.destination_lng) ? `<a href="https://maps.google.com/?q=${o.destination_lat},${o.destination_lng}" target="_blank"><i class="fas fa-map-marker-alt"></i> Lokasi</a>` : '';
                 let statusClass = `status-${o.status}`;
@@ -132,17 +141,28 @@
                 else if(o.status === 'ready') buttons = `<button class="action-btn btn-deliver" onclick="updateStatus('${id}','delivering')">Kirim</button>`;
                 else if(o.status === 'delivering') buttons = `<button class="action-btn btn-complete" onclick="updateStatus('${id}','completed')">Selesai</button>`;
                 buttons += ` <a href="https://wa.me/${o.customer?.phone?.replace(/\D/g,'')}?text=Halo%20pesanan%20${id}" target="_blank" class="action-btn btn-whatsapp" style="background:#25D366;">WA</a>`;
-                html += `<tr>\\
-<td>${id}</td>\\
-<td>${o.customer?.name}<br><small>${o.customer?.phone}</small></td>\\
-<td>${alamat}<br>${mapLink}</td>\\
-<td>Rp ${(o.total||0).toLocaleString()}</td>\\
-<td><span class="order-status ${statusClass}">${statusText}</span></td>\\
-<td>${buttons}</td>\\
-</tr>`;
+                html += `\\
+                     <td>${firstCol}</td>\\
+                     <td>${customerHtml}</td>\\
+                     <td>${alamat}<br>${mapLink}</td>\\
+                     <td>Rp ${(o.total||0).toLocaleString()}</td>\\
+                     <td><span class="order-status ${statusClass}">${statusText}</span></td>\\
+                     <td>${buttons}</td>\\
+                 </tr>`;
             });
-            html += `</tbody></table></div>`;
+            html += `</tbody>\\
+        </div>`;
             document.getElementById('ordersContainer').innerHTML = html;
+        }
+        
+        function escapeHtml(str) {
+            if(!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if(m === '&') return '&amp;';
+                if(m === '<') return '&lt;';
+                if(m === '>') return '&gt;';
+                return m;
+            });
         }
         
         window.updateStatus = (id, newStatus) => {
@@ -160,11 +180,9 @@
         function loadMenu() {
             db.ref('Lapak Inayah/menu').on('value', snap => {
                 const data = snap.val();
-                // Konversi ke array jika data berupa object (push ID) atau langsung array
                 if (Array.isArray(data)) {
                     menu = data;
                 } else if (data && typeof data === 'object') {
-                    // Ubah object dengan key acak menjadi array
                     menu = Object.values(data);
                 } else {
                     menu = [];
@@ -202,20 +220,9 @@
             container.innerHTML = html;
         }
         
-        function escapeHtml(str) {
-            if(!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if(m === '&') return '&amp;';
-                if(m === '<') return '&lt;';
-                if(m === '>') return '&gt;';
-                return m;
-            });
-        }
-        
         window.updateStock = (idx, val) => {
             if(!menu[idx]) return;
             menu[idx].stock = parseInt(val) || 0;
-            // Simpan seluruh array menu
             db.ref('Lapak Inayah/menu').set(menu);
         };
         
