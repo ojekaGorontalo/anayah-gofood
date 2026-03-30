@@ -5,162 +5,120 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Lapak Inayah - Order Online</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Mapbox CSS & JS -->
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
-    <!-- Mapbox Search JS (untuk autocomplete) -->
     <script id="search-js" defer src="https://api.mapbox.com/search-js/v1.5.0/web.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #f8f9fa; color: #333; line-height: 1.6; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: #f8f9fa; padding-bottom: 70px; }
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-        header { background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white; padding: 1rem 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
-        .header-content { display: flex; justify-content: space-between; align-items: center; }
+        header { background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white; padding: 1rem 0; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .header-content { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         .logo { display: flex; align-items: center; gap: 12px; }
         .logo i { font-size: 2rem; }
         .logo h1 { font-size: 1.5rem; }
         .logo p { font-size: 0.8rem; opacity: 0.9; }
-        .header-nav { display: flex; gap: 20px; align-items: center; }
+        .header-nav { display: flex; gap: 20px; }
         .cart-icon { position: relative; font-size: 1.8rem; cursor: pointer; }
         .cart-count { position: absolute; top: -10px; right: -10px; background: #ffdd59; color: #333; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: bold; }
-        .main-content { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin: 30px 0; }
-        .menu-section h2 { color: #333; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 3px solid #ff6b6b; font-size: 1.5rem; }
-        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; }
-        .menu-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.08); transition: transform 0.3s ease, box-shadow 0.3s ease; }
-        .menu-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.12); }
-        .menu-image { height: 160px; width: 100%; object-fit: cover; }
-        .menu-info { padding: 20px; }
-        .menu-info h3 { color: #333; margin-bottom: 8px; font-size: 1.3rem; }
-        .menu-info p { color: #666; font-size: 0.95rem; margin-bottom: 15px; min-height: 40px; }
-        .menu-price { color: #ee5a24; font-weight: bold; font-size: 1.2rem; margin-bottom: 15px; display: block; }
-        .menu-actions { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
-        .quantity-control { display: flex; align-items: center; gap: 8px; }
-        .qty-btn { width: 32px; height: 32px; border-radius: 50%; border: none; background: #f1f2f6; color: #333; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
-        .qty-btn:hover { background: #dfe4ea; }
-        .quantity { font-weight: bold; min-width: 30px; text-align: center; font-size: 1rem; }
-        .add-to-cart { background: #ff6b6b; color: white; border: none; padding: 8px 20px; border-radius: 25px; cursor: pointer; font-weight: 600; transition: background 0.3s; font-size: 0.9rem; }
-        .add-to-cart:hover { background: #ee5a24; }
-        .order-summary { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); position: sticky; top: 100px; height: fit-content; }
-        .order-summary h2 { color: #333; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 3px solid #ff6b6b; font-size: 1.5rem; }
-        .cart-items { max-height: 300px; overflow-y: auto; margin-bottom: 20px; }
-        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 8px; }
-        .cart-item-name { flex: 2; font-weight: 500; font-size: 0.95rem; }
-        .cart-item-qty { margin: 0 10px; font-size: 0.9rem; }
-        .cart-item-price { font-weight: 600; color: #ee5a24; font-size: 0.9rem; }
-        .remove-item { color: #ff6b6b; background: none; border: none; cursor: pointer; margin-left: 5px; }
-        .total-section { border-top: 2px solid #eee; padding-top: 20px; margin-top: 10px; }
-        .total-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 1rem; }
-        .grand-total { font-size: 1.3rem; font-weight: bold; color: #ee5a24; }
-        .customer-form { margin-top: 25px; padding-top: 25px; border-top: 2px solid #eee; }
-        .customer-form h3 { font-size: 1.2rem; margin-bottom: 15px; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 0.9rem; }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem; transition: border 0.3s; }
-        .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: #ff6b6b; outline: none; }
-        .submit-order { width: 100%; background: #00b894; color: white; border: none; padding: 14px; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.3s; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .submit-order:hover { background: #00a085; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
-        .modal-content { background: white; padding: 30px; border-radius: 12px; max-width: 500px; width: 90%; text-align: center; }
-        .modal h2 { color: #00b894; margin-bottom: 15px; }
-        .modal p { margin-bottom: 20px; font-size: 1rem; }
-        .modal-close { background: #ff6b6b; color: white; border: none; padding: 10px 25px; border-radius: 25px; cursor: pointer; font-weight: 600; }
-        .order-history-section { background: white; border-radius: 12px; padding: 25px; margin-top: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
-        .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
-        .history-header h2 { font-size: 1.5rem; }
-        .active-orders { margin-bottom: 30px; border-bottom: 2px dashed #eee; padding-bottom: 20px; }
-        .active-title { font-size: 1.3rem; margin-bottom: 15px; color: #ff6b6b; display: flex; align-items: center; gap: 10px; }
-        .phone-input-container { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .phone-input-container input { flex: 1; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.95rem; }
-        .check-orders-btn { background: #3498db; color: white; border: none; padding: 0 20px; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
-        .order-history-container { max-height: 400px; overflow-y: auto; }
-        .order-card { background: #f8f9fa; border-radius: 8px; padding: 20px; margin-bottom: 15px; border-left: 4px solid #3498db; }
-        .order-card.completed { border-left-color: #00b894; }
-        .order-card.processing { border-left-color: #f39c12; }
-        .order-card.pending { border-left-color: #e74c3c; }
-        .order-card.delivering { border-left-color: #9b59b6; }
-        .order-card.ready { border-left-color: #2ecc71; }
-        .order-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
-        .order-id { font-weight: bold; color: #2c3e50; font-size: 0.9rem; }
-        .order-date { color: #7f8c8d; font-size: 0.8rem; }
-        .order-status { padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 12px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            border-top: 1px solid #eee;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.75rem;
+            color: #888;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .nav-item i { font-size: 1.4rem; }
+        .nav-item.active { color: #ff6b6b; }
+        
+        /* Tab Content */
+        .tab-content { display: none; margin: 20px 0; }
+        .tab-content.active { display: block; }
+        
+        /* Menu Grid */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 15px;
+        }
+        .menu-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        .menu-image { width: 100%; height: 120px; object-fit: cover; }
+        .menu-info { padding: 12px; }
+        .menu-info h3 { font-size: 1rem; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .menu-info p { font-size: 0.75rem; color: #666; display: none; }
+        .menu-price { color: #ee5a24; font-weight: bold; font-size: 1rem; margin: 5px 0; }
+        .stock-badge { font-size: 0.7rem; color: #e74c3c; margin-left: 5px; }
+        .menu-actions { display: flex; flex-direction: column; gap: 8px; }
+        .quantity-control { display: flex; justify-content: center; gap: 12px; align-items: center; }
+        .qty-btn { width: 28px; height: 28px; border-radius: 50%; border: none; background: #f1f2f6; cursor: pointer; }
+        .add-to-cart { background: #ff6b6b; color: white; border: none; padding: 6px; border-radius: 20px; cursor: pointer; font-size: 0.8rem; }
+        .add-to-cart.disabled { background: #ccc; cursor: not-allowed; }
+        
+        /* Order Summary */
+        .order-summary, .history-section, .active-orders-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .cart-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+        .total-section { border-top: 2px solid #eee; padding-top: 15px; margin-top: 10px; }
+        .grand-total { font-weight: bold; font-size: 1.2rem; color: #ee5a24; }
+        .customer-form { margin-top: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
+        .submit-order { width: 100%; background: #00b894; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .submit-order.disabled { background: #ccc; cursor: not-allowed; }
+        
+        /* Location */
+        .location-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+        .location-row input { flex: 1; }
+        .gps-btn { background: #3498db; color: white; border: none; padding: 10px 12px; border-radius: 8px; cursor: pointer; }
+        
+        /* Order Cards */
+        .order-card { background: #f8f9fa; border-radius: 8px; padding: 15px; margin-bottom: 15px; border-left: 4px solid; }
+        .order-header { display: flex; justify-content: space-between; flex-wrap: wrap; margin-bottom: 10px; }
+        .order-status { padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; }
         .status-pending { background: #ffeaa7; color: #e17055; }
         .status-processing { background: #fab1a0; color: #d63031; }
         .status-ready { background: #a29bfe; color: #6c5ce7; }
         .status-delivering { background: #81ecec; color: #00cec9; }
         .status-completed { background: #55efc4; color: #00b894; }
-        .order-items { margin: 10px 0; color: #636e72; font-size: 0.9rem; }
-        .order-total { font-weight: bold; color: #2c3e50; text-align: right; margin-top: 10px; font-size: 0.95rem; }
-        .no-orders { text-align: center; padding: 30px; color: #999; }
-        .status-timeline { position: relative; padding: 20px 0; margin-top: 15px; }
-        .status-step { display: flex; align-items: center; margin-bottom: 15px; position: relative; z-index: 2; }
-        .status-icon { width: 32px; height: 32px; border-radius: 50%; background: #eee; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 0.9rem; color: #666; }
+        .status-timeline { margin-top: 15px; position: relative; padding-left: 20px; }
+        .status-step { margin-bottom: 12px; display: flex; gap: 10px; align-items: center; }
+        .status-icon { width: 28px; height: 28px; border-radius: 50%; background: #eee; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; }
         .status-icon.active { background: #00b894; color: white; }
         .status-icon.completed { background: #2ecc71; color: white; }
-        .status-info h4 { margin-bottom: 5px; color: #333; font-size: 0.9rem; }
-        .status-info p { color: #666; font-size: 0.75rem; }
-        .status-timeline::before { content: ''; position: absolute; left: 16px; top: 0; bottom: 0; width: 2px; background: #eee; z-index: 1; }
-        footer { background: #333; color: white; text-align: center; padding: 25px 0; margin-top: 50px; }
-        .footer-links { display: flex; justify-content: center; gap: 30px; margin-top: 15px; flex-wrap: wrap; }
-        .footer-links a { color: #ffdd59; text-decoration: none; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
+        
+        .loading, .no-data { text-align: center; padding: 30px; color: #999; }
+        .toast-notif { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #2c3e50; color: white; padding: 10px 20px; border-radius: 40px; z-index: 2000; animation: fadeInOut 3s ease; }
+        @keyframes fadeInOut { 0% { opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; } }
         @media (max-width: 768px) {
             .container { padding: 0 12px; }
-            .main-content { grid-template-columns: 1fr; gap: 20px; }
-            .menu-grid { grid-template-columns: repeat(4, 1fr); gap: 10px; }
-            .menu-image { height: 100px; }
-            .menu-info { padding: 8px; }
-            .menu-info h3 { font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-            .menu-info p { font-size: 0.7rem; display: none; }
-            .menu-price { font-size: 0.85rem; margin-bottom: 8px; }
-            .menu-actions { flex-direction: column; align-items: stretch; gap: 6px; }
-            .quantity-control { justify-content: center; gap: 12px; }
-            .qty-btn { width: 28px; height: 28px; }
-            .add-to-cart { padding: 6px 0; font-size: 0.7rem; width: 100%; }
-            .order-summary { position: static; padding: 18px; }
-            .history-header h2 { font-size: 1.3rem; }
-        }
-        .loading { text-align: center; padding: 30px; font-size: 1rem; color: #666; }
-        .error { color: #e74c3c; padding: 15px; background: #ffeaea; border-radius: 8px; margin: 10px 0; }
-        .toast-notif {
-            position: fixed;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #2c3e50;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 40px;
-            z-index: 2000;
-            font-size: 0.9rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            animation: fadeInOut 3s ease;
-            pointer-events: none;
-        }
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
-            15% { opacity: 1; transform: translateX(-50%) translateY(0); }
-            85% { opacity: 1; transform: translateX(-50%) translateY(0); }
-            100% { opacity: 0; transform: translateX(-50%) translateY(20px); }
-        }
-        /* Style untuk autocomplete */
-        .mapbox-search-input {
-            width: 100%;
-            padding: 12px 15px;
-            font-size: 14px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            background: white;
-            transition: all 0.3s;
-        }
-        .mapbox-search-input:focus {
-            outline: none;
-            border-color: #ee5a24;
-            box-shadow: 0 0 0 3px rgba(238, 90, 36, 0.1);
-        }
-        .delivery-fee-info {
-            margin-top: 5px;
-            font-size: 0.8rem;
-            color: #2ecc71;
-            text-align: right;
+            .menu-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
         }
     </style>
 </head>
@@ -172,7 +130,7 @@
                     <i class="fas fa-utensils"></i>
                     <div>
                         <h1>Lapak Inayah</h1>
-                        <p>Makanan Enak, Harga Terjangkau</p>
+                        <p id="storeStatus">Memuat status...</p>
                     </div>
                 </div>
                 <div class="header-nav">
@@ -186,635 +144,429 @@
     </header>
 
     <div class="container">
-        <div class="main-content">
-            <section class="menu-section">
-                <h2><i class="fas fa-burger"></i> Menu Makanan & Minuman</h2>
-                <div id="menuContainer" class="menu-grid">
-                    <div class="loading"><i class="fas fa-spinner fa-spin"></i> Memuat menu...</div>
-                </div>
-            </section>
+        <!-- Tab Menu -->
+        <div id="menuTab" class="tab-content active">
+            <h2><i class="fas fa-burger"></i> Menu Makanan</h2>
+            <div id="menuContainer" class="menu-grid"><div class="loading">Memuat menu...</div></div>
+        </div>
 
-            <aside class="order-summary">
-                <h2><i class="fas fa-receipt"></i> Ringkasan Pesanan</h2>
-                <div class="cart-items" id="cartItems">
-                    <p style="text-align: center; color: #999; padding: 20px;">Keranjang kosong</p>
-                </div>
+        <!-- Tab Keranjang -->
+        <div id="cartTab" class="tab-content">
+            <div class="order-summary">
+                <h2>🛒 Ringkasan Pesanan</h2>
+                <div id="cartItems" class="cart-items"><p style="text-align:center">Keranjang kosong</p></div>
                 <div class="total-section">
-                    <div class="total-row"><span>Subtotal:</span><span>Rp <span id="subtotal">0</span></span></div>
-                    <div class="total-row"><span>Ongkir:</span><span>Rp <span id="deliveryCost">0</span></span></div>
-                    <div class="total-row grand-total"><span>Total:</span><span>Rp <span id="total">0</span></span></div>
+                    <div>Subtotal: Rp <span id="subtotal">0</span></div>
+                    <div>Ongkir: Rp <span id="deliveryCost">0</span></div>
+                    <div class="grand-total">Total: Rp <span id="total">0</span></div>
                 </div>
-
                 <div class="customer-form">
-                    <h3><i class="fas fa-user"></i> Data Pemesanan</h3>
-                    <div class="form-group">
-                        <label for="customerName">Nama Lengkap*</label>
-                        <input type="text" id="customerName" placeholder="Nama Anda" required>
+                    <h3>Data Pemesanan</h3>
+                    <div class="form-group"><input type="text" id="customerName" placeholder="Nama Lengkap*"></div>
+                    <div class="form-group"><input type="tel" id="customerPhone" placeholder="No. WhatsApp*"></div>
+                    <div class="location-row">
+                        <div id="destination-container" style="flex:1"></div>
+                        <button class="gps-btn" id="getLocationBtn"><i class="fas fa-location-dot"></i></button>
                     </div>
-                    <div class="form-group">
-                        <label for="customerPhone">No. WhatsApp*</label>
-                        <input type="tel" id="customerPhone" placeholder="0812-3456-7890" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="destination">Alamat Tujuan*</label>
-                        <div id="destination-container"></div>
-                        <div id="deliveryFeeInfo" class="delivery-fee-info"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="paymentMethod">Metode Pembayaran*</label>
-                        <select id="paymentMethod">
-                            <option value="cash">Bayar di Tempat (COD)</option>
-                            <option value="transfer">Transfer Bank</option>
-                            <option value="ewallet">E-Wallet (DANA/OVO)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="customerNote">Catatan (opsional)</label>
-                        <textarea id="customerNote" rows="2" placeholder="Contoh: Pedas, tanpa bawang, dll"></textarea>
-                    </div>
+                    <div id="deliveryFeeInfo" class="delivery-fee-info"></div>
+                    <div class="form-group"><select id="paymentMethod"><option value="cash">Bayar di Tempat (COD)</option><option value="transfer">Transfer Bank</option><option value="ewallet">E-Wallet</option></select></div>
+                    <div class="form-group"><textarea id="customerNote" rows="2" placeholder="Catatan (opsional)"></textarea></div>
                     <button class="submit-order" id="submitOrder"><i class="fas fa-paper-plane"></i> Kirim Pesanan</button>
-                    <p style="font-size: 0.7rem; color: #666; margin-top: 15px; text-align: center;">Pesanan akan langsung masuk ke sistem kami</p>
                 </div>
-            </aside>
+            </div>
         </div>
 
-        <section class="order-history-section">
-            <div class="history-header">
-                <h2><i class="fas fa-history"></i> Status Pesanan</h2>
-                <button class="check-orders-btn" id="refreshActiveBtn"><i class="fas fa-sync-alt"></i> Refresh</button>
+        <!-- Tab Pesanan Aktif -->
+        <div id="activeTab" class="tab-content">
+            <h2><i class="fas fa-bell"></i> Pesanan Aktif</h2>
+            <div id="activeOrdersContainer"><div class="loading">Memuat...</div></div>
+        </div>
+
+        <!-- Tab Riwayat -->
+        <div id="historyTab" class="tab-content">
+            <h2><i class="fas fa-history"></i> Riwayat Pesanan</h2>
+            <div class="phone-input-container" style="display:flex; gap:10px; margin-bottom:15px;">
+                <input type="tel" id="checkPhoneInput" placeholder="No. WhatsApp" style="flex:1">
+                <button class="gps-btn" id="checkOrdersBtn">Cek</button>
             </div>
-            <div class="active-orders">
-                <div class="active-title"><i class="fas fa-bell"></i> Pesanan Aktif</div>
-                <div id="activeOrdersContainer"><div class="loading"><i class="fas fa-spinner fa-spin"></i> Memuat pesanan aktif...</div></div>
-            </div>
-            <div style="border-top: 1px solid #eee; padding-top: 20px;">
-                <h3 style="margin-bottom: 15px;"><i class="fas fa-archive"></i> Lihat Semua Riwayat</h3>
-                <div class="phone-input-container">
-                    <input type="tel" id="checkPhoneInput" placeholder="Masukkan No. WhatsApp untuk riwayat lengkap">
-                    <button class="check-orders-btn" id="checkOrdersBtn"><i class="fas fa-search"></i> Cek Riwayat</button>
-                </div>
-                <div id="orderHistoryContainer"><div class="no-orders"><i class="fas fa-shopping-bag" style="font-size: 3rem; margin-bottom: 15px; color: #ddd;"></i><p>Masukkan nomor WhatsApp untuk melihat semua pesanan</p></div></div>
-            </div>
-        </section>
+            <div id="orderHistoryContainer"><div class="no-data">Masukkan nomor WhatsApp</div></div>
+        </div>
     </div>
 
-    <div class="modal" id="successModal">
-        <div class="modal-content">
-            <i class="fas fa-check-circle" style="font-size: 4rem; color: #00b894; margin-bottom: 20px;"></i>
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <div class="nav-item active" data-tab="menu"><i class="fas fa-utensils"></i><span>Menu</span></div>
+        <div class="nav-item" data-tab="cart"><i class="fas fa-shopping-cart"></i><span>Keranjang</span></div>
+        <div class="nav-item" data-tab="active"><i class="fas fa-truck"></i><span>Aktif</span></div>
+        <div class="nav-item" data-tab="history"><i class="fas fa-clock"></i><span>Riwayat</span></div>
+    </div>
+
+    <!-- Modal Sukses -->
+    <div class="modal" id="successModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); align-items:center; justify-content:center; z-index:1100;">
+        <div class="modal-content" style="background:white; padding:30px; border-radius:12px; text-align:center; max-width:90%;">
+            <i class="fas fa-check-circle" style="font-size:4rem; color:#00b894;"></i>
             <h2>Pesanan Berhasil!</h2>
-            <p>Terima kasih <span id="customerNameSuccess"></span>, pesanan Anda telah kami terima.</p>
+            <p>Terima kasih <span id="customerNameSuccess"></span></p>
             <p>No. Pesanan: <strong id="orderId"></strong></p>
-            <p>Status pesanan akan muncul di "Pesanan Aktif" secara realtime.</p>
-            <button class="modal-close" id="modalClose">Tutup</button>
+            <button class="modal-close" id="modalClose" style="background:#ff6b6b; border:none; padding:8px 20px; border-radius:20px; color:white; margin-top:15px;">Tutup</button>
         </div>
     </div>
 
-    <footer>
-        <div class="container">
-            <p>&copy; 2026 Lapak Inayah. All rights reserved.</p>
-            <div class="footer-links">
-                <a href="admin.html" target="_blank"><i class="fas fa-lock"></i> Halaman Admin</a>
-                <a href="#" id="viewOrdersFooter"><i class="fas fa-history"></i> Lihat Pesanan Saya</a>
-                <a href="#" id="contactUs"><i class="fas fa-phone"></i> Hubungi Kami</a>
-            </div>
+    <!-- Modal Pembayaran -->
+    <div id="paymentModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); align-items:center; justify-content:center; z-index:1100;">
+        <div class="modal-content" style="background:white; padding:20px; border-radius:12px; max-width:90%; width:350px;">
+            <h3 id="paymentModalTitle">Pilih Metode</h3>
+            <div id="paymentModalBody"></div>
+            <button id="paymentModalConfirm" style="background:#00b894; color:white; border:none; padding:10px; border-radius:8px; width:100%; margin-top:10px;">Konfirmasi</button>
+            <button id="paymentModalClose" style="background:#ccc; margin-top:8px; width:100%; padding:8px; border:none; border-radius:8px;">Batal</button>
         </div>
-    </footer>
+    </div>
 
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
     <script>
-        // ========== KONFIGURASI FIREBASE ==========
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyDa3JXfyzGgVyzBqf0uL_P-DuU97RhhTv8",
             authDomain: "game-balap-simpel.firebaseapp.com",
             databaseURL: "https://game-balap-simpel-default-rtdb.firebaseio.com",
             projectId: "game-balap-simpel",
-            storageBucket: "game-balap-simpel.appspot.com",
-            messagingSenderId: "123456789012",
-            appId: "1:123456789012:web:abcdef123456"
+            storageBucket: "game-balap-simpel.appspot.com"
         };
         firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        const db = firebase.database();
 
-        // ==================== KONFIGURASI TELEGRAM ====================
-        const TELEGRAM_BOT_TOKEN = "8792810774:AAFZq0Va9XuyWITnnunIx5KvDTfhYSIXRp0";
-        const TELEGRAM_CHAT_ID = "1215039026";
-
-        async function sendTelegramNotification(order, orderId) {
-            if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
-                console.warn("Token atau Chat ID Telegram tidak dikonfigurasi.");
-                return;
-            }
-            let itemsText = "";
-            if (order.items) {
-                for (const key in order.items) {
-                    const item = order.items[key];
-                    if (item.qty > 0) {
-                        itemsText += `- ${item.nama} x${item.qty} = Rp ${item.harga * item.qty}\n`;
-                    }
-                }
-            }
-            const message = `
-🆕 <b>PESANAN BARU!</b>
-
-🆔 <b>Order ID:</b> ${orderId}
-👤 <b>Nama:</b> ${order.customer?.name || "-"}
-📞 <b>No. WA:</b> ${order.customer?.phone || "-"}
-🏠 <b>Alamat Tujuan:</b> ${order.destination_address || "-"}
-📍 <b>Koordinat Tujuan:</b> ${order.destination_lat || "-"}, ${order.destination_lng || "-"}
-💳 <b>Metode:</b> ${order.customer?.paymentMethod === "cash" ? "COD" : (order.customer?.paymentMethod || "-").toUpperCase()}
-📝 <b>Catatan:</b> ${order.customer?.note || "-"}
-
-🍽️ <b>Detail Pesanan:</b>
-${itemsText || "- Tidak ada item"}
-
-💰 <b>Total:</b> Rp ${order.total || 0}
-            `;
-            const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
-            try {
-                const response = await fetch(url, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        chat_id: TELEGRAM_CHAT_ID,
-                        text: message,
-                        parse_mode: "HTML"
-                    })
-                });
-                if (response.ok) {
-                    console.log(`✅ Notifikasi Telegram terkirim untuk order ${orderId}`);
-                } else {
-                    const error = await response.text();
-                    console.error(`❌ Gagal kirim Telegram: ${error}`);
-                }
-            } catch (err) {
-                console.error("❌ Error saat mengirim ke Telegram:", err);
-            }
-        }
-
-        // ========== VARIABEL GLOBAL ==========
-        let menuData = [];
+        let menu = [];
         let cart = {};
+        let destinationCoord = null;
+        let destinationAddress = "";
+        let calculatedDeliveryCost = 0;
         let currentActivePhone = null;
         let activeOrdersListener = null;
-        let previousOrderStatus = {};
-
-        // Data ongkir & koordinat
-        const PICKUP_COORD = { lat: 0.5641651, lng: 123.1230487 }; // titik jemput tetap
-        let destinationCoord = null;      // { lat, lng } dari hasil autocomplete
-        let destinationAddress = "";      // alamat lengkap yang dipilih
-        let calculatedDeliveryCost = 0;   // hasil perhitungan ongkir
-
-        // ========== FUNGSI HELPER ==========
-        function formatNumber(num) {
-            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-        }
-
-        // Hitung jarak (km) menggunakan rumus Haversine
-        function calculateDistance(coord1, coord2) {
-            const R = 6371; // km
-            const dLat = (coord2.lat - coord1.lat) * Math.PI / 180;
-            const dLon = (coord2.lng - coord1.lng) * Math.PI / 180;
-            const a = 
-                Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(coord1.lat * Math.PI/180) * Math.cos(coord2.lat * Math.PI/180) *
-                Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c;
-        }
-
-        // Hitung ongkir berdasarkan jarak (km)
-        // minDistance = 4 km, minPrice = 10000, pricePerKm = 2500
-        function calculateDeliveryCost(distanceKm) {
-            const minDistance = 4;
-            const minPrice = 10000;
-            const pricePerKm = 2500;
-            let total = distanceKm <= minDistance ? minPrice : minPrice + Math.round((distanceKm - minDistance) * pricePerKm);
-            // Bulatkan ke ribuan terdekat (sama seperti di rute.html)
-            const down = Math.floor(total / 1000) * 1000;
-            const rounded = (total % 1000) > 500 ? down + 1000 : down;
-            return rounded;
-        }
-
-        // Update tampilan ongkir dan total
-        function updateDeliveryDisplay() {
-            const subtotal = calculateSubtotal();
-            const deliveryCost = calculatedDeliveryCost;
-            document.getElementById('deliveryCost').textContent = formatNumber(deliveryCost);
-            document.getElementById('total').textContent = formatNumber(subtotal + deliveryCost);
-            if (destinationAddress) {
-                document.getElementById('deliveryFeeInfo').innerHTML = `<i class="fas fa-truck"></i> Jarak: ${distanceToDestination.toFixed(2)} km | Ongkir: Rp ${formatNumber(deliveryCost)}`;
-            } else {
-                document.getElementById('deliveryFeeInfo').innerHTML = '';
-            }
-        }
-
-        // ========== FUNGSI CART & MENU (tidak berubah) ==========
-        function loadMenu() {
-            database.ref('Lapak Inayah/menu').on('value', (snapshot) => {
-                menuData = snapshot.val() || [];
-                renderMenu(menuData);
-                console.log("Menu loaded, total item:", menuData.length);
-            });
-        }
-
-        function renderMenu(menu) {
-            const container = document.getElementById('menuContainer');
-            if (!menu || menu.length === 0) {
-                container.innerHTML = '<p style="text-align: center; padding: 30px;">Menu belum tersedia</p>';
-                return;
-            }
-            container.innerHTML = '';
-            menu.forEach((item, index) => {
-                const menuItem = document.createElement('div');
-                menuItem.className = 'menu-card';
-                menuItem.innerHTML = `
-                    <img src="${item.gambar || 'https://via.placeholder.com/300x160?text=Lapak Inayah'}" alt="${item.nama}" class="menu-image">
-                    <div class="menu-info">
-                        <h3>${item.nama}</h3>
-                        <p>${item.deskripsi || 'Menu lezat'}</p>
-                        <span class="menu-price">Rp ${formatNumber(item.harga)}</span>
-                        <div class="menu-actions">
-                            <div class="quantity-control">
-                                <button class="qty-btn minus" onclick="decreaseQty(${index})">-</button>
-                                <span class="quantity" id="qty-${index}">${cart[index] ? cart[index].qty : 0}</span>
-                                <button class="qty-btn plus" onclick="increaseQty(${index})">+</button>
-                            </div>
-                            <button class="add-to-cart" onclick="addToCartWithAlert(${index})">${cart[index] && cart[index].qty > 0 ? 'Update' : 'Tambah'}</button>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(menuItem);
-            });
-        }
-
-        function addToCartWithAlert(index) {
-            const item = menuData[index];
-            if (!item) return;
-            const qtyElement = document.getElementById(`qty-${index}`);
-            let qty = parseInt(qtyElement.textContent) || 0;
-            if (qty < 1) qty = 1;
-            cart[index] = { id: index, nama: item.nama, harga: item.harga, qty: qty };
-            updateCart();
-            alert(`✅ ${item.nama} ditambahkan ke keranjang! (${qty} pcs)`);
-            document.getElementById(`qty-${index}`).textContent = qty;
-        }
-
-        function increaseQty(index) {
-            const qtyElement = document.getElementById(`qty-${index}`);
-            let qty = parseInt(qtyElement.textContent) || 0;
-            qty++;
-            qtyElement.textContent = qty;
-            const item = menuData[index];
-            if (item && qty > 0) { cart[index] = { id: index, nama: item.nama, harga: item.harga, qty: qty }; updateCart(); alert(`➕ ${item.nama} jumlah ditambah menjadi ${qty}`); }
-            else if (qty === 0) { delete cart[index]; updateCart(); }
-        }
-
-        function decreaseQty(index) {
-            const qtyElement = document.getElementById(`qty-${index}`);
-            let qty = parseInt(qtyElement.textContent) || 0;
-            if (qty > 0) qty--;
-            qtyElement.textContent = qty;
-            const item = menuData[index];
-            if (qty > 0 && item) { cart[index] = { id: index, nama: item.nama, harga: item.harga, qty: qty }; }
-            else { delete cart[index]; }
-            updateCart();
-        }
-
-        function removeFromCart(index) {
-            delete cart[index];
-            if (document.getElementById(`qty-${index}`)) document.getElementById(`qty-${index}`).textContent = '0';
-            updateCart();
-        }
-
-        function updateCart() {
-            const cartItems = document.getElementById('cartItems');
-            const cartCount = document.getElementById('cartCount');
-            const subtotalEl = document.getElementById('subtotal');
-            let totalItems = 0, subtotal = 0, cartHTML = '';
-            Object.values(cart).forEach(item => {
-                if (item.qty > 0) {
-                    totalItems += item.qty;
-                    const itemTotal = item.harga * item.qty;
-                    subtotal += itemTotal;
-                    cartHTML += `<div class="cart-item"><div class="cart-item-name">${item.nama}</div><div class="cart-item-qty">x${item.qty}</div><div class="cart-item-price">Rp ${formatNumber(itemTotal)}</div><button class="remove-item" onclick="removeFromCart(${item.id})"><i class="fas fa-trash"></i></button></div>`;
-                }
-            });
-            cartCount.textContent = totalItems;
-            cartItems.innerHTML = cartHTML === '' ? '<p style="text-align: center; color: #999; padding: 20px;">Keranjang kosong</p>' : cartHTML;
-            subtotalEl.textContent = formatNumber(subtotal);
-            updateDeliveryDisplay(); // akan update total juga
-            localStorage.setItem('Lapak Inayah_cart', JSON.stringify(cart));
-        }
-
-        function calculateSubtotal() {
-            return Object.values(cart).reduce((t, i) => t + (i.harga * i.qty), 0);
-        }
-
-        // ========== AUTOCOMPLETE DENGAN MAPBOX ==========
         let mapboxToken = null;
         let searchBox = null;
+        let storeOpen = true;
 
-        async function initMapboxAutocomplete() {
-            try {
-                const tokenSnapshot = await database.ref('Secret/Key').once('value');
-                mapboxToken = tokenSnapshot.val();
-                if (!mapboxToken) throw new Error('Token Mapbox tidak ditemukan');
-                mapboxgl.accessToken = mapboxToken;
-
-                const container = document.getElementById('destination-container');
-                if (!container) return;
-
-                // Buat MapboxSearchBox
-                searchBox = new mapboxsearch.MapboxSearchBox();
+        const PICKUP_COORD = { lat: 0.5641651, lng: 123.1230487 };
+        
+        // Helper
+        function formatNumber(num) { return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
+        function calculateDistance(coord1, coord2) {
+            const R = 6371;
+            const dLat = (coord2.lat - coord1.lat) * Math.PI / 180;
+            const dLon = (coord2.lng - coord1.lng) * Math.PI / 180;
+            const a = Math.sin(dLat/2)**2 + Math.cos(coord1.lat * Math.PI/180) * Math.cos(coord2.lat * Math.PI/180) * Math.sin(dLon/2)**2;
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        }
+        function calculateDeliveryCost(distanceKm) { 
+            let cost = distanceKm <= 4 ? 10000 : 10000 + Math.round((distanceKm - 4) * 2500);
+            return Math.floor(cost / 1000) * 1000;
+        }
+        function updateDeliveryDisplay() {
+            let subtotal = Object.values(cart).reduce((s,i)=> s + i.harga*i.qty, 0);
+            document.getElementById('subtotal').innerText = formatNumber(subtotal);
+            document.getElementById('deliveryCost').innerText = formatNumber(calculatedDeliveryCost);
+            document.getElementById('total').innerText = formatNumber(subtotal + calculatedDeliveryCost);
+            if(destinationAddress) document.getElementById('deliveryFeeInfo').innerHTML = `<i class="fas fa-truck"></i> Jarak: ${window.distToDest?.toFixed(2)} km | Ongkir: Rp ${formatNumber(calculatedDeliveryCost)}`;
+            else document.getElementById('deliveryFeeInfo').innerHTML = '';
+        }
+        
+        // Load menu dengan stok
+        function loadMenu() {
+            db.ref('Lapak Inayah/menu').on('value', snap => {
+                menu = snap.val() || [];
+                renderMenu();
+            });
+        }
+        function renderMenu() {
+            const container = document.getElementById('menuContainer');
+            if(!menu.length) { container.innerHTML = '<div class="no-data">Menu kosong</div>'; return; }
+            container.innerHTML = menu.map((item, idx) => `
+                <div class="menu-card">
+                    <img src="${item.gambar || 'https://via.placeholder.com/300x160'}" class="menu-image">
+                    <div class="menu-info">
+                        <h3>${item.nama} ${item.stock === 0 ? '<span class="stock-badge">(Habis)</span>' : ''}</h3>
+                        <div class="menu-price">Rp ${formatNumber(item.harga)}</div>
+                        <div class="menu-actions">
+                            <div class="quantity-control">
+                                <button class="qty-btn" onclick="changeQty(${idx}, -1)" ${item.stock === 0 ? 'disabled' : ''}>-</button>
+                                <span id="qty-${idx}">${cart[idx]?.qty || 0}</span>
+                                <button class="qty-btn" onclick="changeQty(${idx}, 1)" ${item.stock === 0 ? 'disabled' : ''}>+</button>
+                            </div>
+                            <button class="add-to-cart ${item.stock === 0 ? 'disabled' : ''}" onclick="addToCart(${idx})">${cart[idx]?.qty > 0 ? 'Update' : 'Tambah'}</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        window.changeQty = (idx, delta) => {
+            if(!menu[idx]) return;
+            let qty = (cart[idx]?.qty || 0) + delta;
+            if(qty < 0) qty = 0;
+            if(qty > menu[idx].stock && menu[idx].stock !== undefined) qty = menu[idx].stock;
+            if(qty === 0) delete cart[idx];
+            else cart[idx] = { id: idx, nama: menu[idx].nama, harga: menu[idx].harga, qty };
+            document.getElementById(`qty-${idx}`).innerText = qty || 0;
+            updateCartUI();
+        };
+        window.addToCart = (idx) => {
+            if(!storeOpen) { showToast("Warung sedang tutup, tidak bisa memesan"); return; }
+            if(menu[idx].stock === 0) { showToast("Maaf, produk habis"); return; }
+            let qty = parseInt(document.getElementById(`qty-${idx}`).innerText) || 1;
+            if(qty > menu[idx].stock) qty = menu[idx].stock;
+            cart[idx] = { id: idx, nama: menu[idx].nama, harga: menu[idx].harga, qty };
+            document.getElementById(`qty-${idx}`).innerText = qty;
+            updateCartUI();
+            showToast(`${menu[idx].nama} ditambahkan (${qty})`);
+        };
+        function updateCartUI() {
+            const container = document.getElementById('cartItems');
+            let totalItems = 0, subtotal = 0;
+            let html = '';
+            Object.values(cart).forEach(item => {
+                totalItems += item.qty;
+                subtotal += item.harga * item.qty;
+                html += `<div class="cart-item"><span>${item.nama} x${item.qty}</span><span>Rp ${formatNumber(item.harga * item.qty)}</span><button onclick="removeFromCart(${item.id})" style="background:none; border:none; color:#e74c3c;"><i class="fas fa-trash"></i></button></div>`;
+            });
+            document.getElementById('cartCount').innerText = totalItems;
+            if(html === '') container.innerHTML = '<p style="text-align:center">Keranjang kosong</p>';
+            else container.innerHTML = html;
+            document.getElementById('subtotal').innerText = formatNumber(subtotal);
+            updateDeliveryDisplay();
+            localStorage.setItem('lapak_cart', JSON.stringify(cart));
+        }
+        window.removeFromCart = (id) => { delete cart[id]; updateCartUI(); renderMenu(); };
+        
+        // Ambil lokasi GPS
+        function getCurrentLocation() {
+            if(!navigator.geolocation) { alert("Browser tidak mendukung GPS"); return; }
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+                destinationCoord = { lat, lng };
+                // Reverse geocode dengan Mapbox
+                if(mapboxToken) {
+                    const res = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapboxToken}&language=id`);
+                    const data = await res.json();
+                    if(data.features && data.features[0]) {
+                        destinationAddress = data.features[0].place_name;
+                        if(searchBox && searchBox.querySelector('input')) searchBox.querySelector('input').value = destinationAddress;
+                    } else destinationAddress = `${lat}, ${lng}`;
+                } else destinationAddress = `${lat}, ${lng}`;
+                const distance = calculateDistance(PICKUP_COORD, destinationCoord);
+                calculatedDeliveryCost = calculateDeliveryCost(distance);
+                window.distToDest = distance;
+                updateDeliveryDisplay();
+                showToast("Lokasi berhasil diambil");
+            }, (err) => { alert("Gagal mengambil lokasi: " + err.message); });
+        }
+        
+        // Mapbox Autocomplete
+        async function initMapbox() {
+            const tokenSnap = await db.ref('Secret/Key').once('value');
+            mapboxToken = tokenSnap.val();
+            if(!mapboxToken) return;
+            mapboxgl.accessToken = mapboxToken;
+            const container = document.getElementById('destination-container');
+            if(!container) return;
+            const MapboxSearch = window.mapboxsearch?.MapboxSearchBox;
+            if(MapboxSearch) {
+                searchBox = new MapboxSearch();
                 searchBox.accessToken = mapboxToken;
-                searchBox.options = {
-                    language: 'id',
-                    country: 'ID',
-                    types: 'poi,address,place,locality,neighborhood',
-                    proximity: [PICKUP_COORD.lng, PICKUP_COORD.lat]
-                };
-                searchBox.placeholder = 'Cari alamat tujuan...';
-                searchBox.className = 'mapbox-search-input';
-                searchBox.marker = false;
-
+                searchBox.options = { language: 'id', country: 'ID', proximity: [PICKUP_COORD.lng, PICKUP_COORD.lat] };
+                searchBox.placeholder = 'Cari alamat...';
                 searchBox.addEventListener('retrieve', (e) => {
-                    const feature = e.detail;
-                    let coordinates = null;
-                    let displayName = 'Lokasi terpilih';
-
-                    function makeDisplayName(props) {
-                        if (!props) return 'Lokasi terpilih';
-                        const nameProp = props.name || props.poi_name || props.place_name || '';
-                        let addressProp = props.full_address || props.place_formatted || props.address || '';
-                        if (!addressProp && props.context) {
-                            const parts = [];
-                            if (props.context.place) parts.push(props.context.place.name);
-                            if (props.context.district) parts.push(props.context.district.name);
-                            if (props.context.region) parts.push(props.context.region.name);
-                            if (props.context.country) parts.push(props.context.country.name);
-                            addressProp = parts.join(', ');
-                        }
-                        if (nameProp && addressProp) {
-                            if (addressProp.includes(nameProp)) return addressProp;
-                            return nameProp + ', ' + addressProp;
-                        } else if (addressProp) {
-                            return addressProp;
-                        } else if (nameProp) {
-                            return nameProp;
-                        }
-                        return 'Lokasi terpilih';
-                    }
-
-                    if (feature && feature.geometry && feature.geometry.coordinates) {
-                        coordinates = feature.geometry.coordinates;
-                        displayName = makeDisplayName(feature.properties);
-                    } else if (feature && feature.features && feature.features.length > 0) {
-                        const first = feature.features[0];
-                        coordinates = first.geometry.coordinates;
-                        displayName = makeDisplayName(first.properties);
-                    } else {
-                        console.error('Format feature tidak dikenal:', feature);
-                        return;
-                    }
-
-                    if (coordinates && coordinates.length === 2) {
-                        destinationCoord = { lng: coordinates[0], lat: coordinates[1] };
-                        destinationAddress = displayName;
-                        // Hitung jarak dan ongkir
-                        const distance = calculateDistance(PICKUP_COORD, destinationCoord);
-                        calculatedDeliveryCost = calculateDeliveryCost(distance);
-                        window.distanceToDestination = distance; // untuk info tambahan
+                    const feat = e.detail;
+                    let coords = null, name = '';
+                    if(feat && feat.geometry) coords = feat.geometry.coordinates;
+                    else if(feat.features && feat.features[0]) coords = feat.features[0].geometry.coordinates;
+                    if(coords) {
+                        destinationCoord = { lng: coords[0], lat: coords[1] };
+                        destinationAddress = feat.properties?.full_address || feat.properties?.place_name || '';
+                        const dist = calculateDistance(PICKUP_COORD, destinationCoord);
+                        calculatedDeliveryCost = calculateDeliveryCost(dist);
+                        window.distToDest = dist;
                         updateDeliveryDisplay();
-                        // Simpan nilai di input (tidak perlu input terpisah)
-                        const inputElem = searchBox.querySelector('input');
-                        if (inputElem) inputElem.value = displayName;
                     }
                 });
-
                 container.appendChild(searchBox);
-            } catch (error) {
-                console.error('Gagal inisialisasi Mapbox autocomplete:', error);
-                document.getElementById('destination-container').innerHTML = '<div class="error">Gagal memuat fitur alamat. Silakan hubungi admin.</div>';
+            } else {
+                container.innerHTML = '<input type="text" placeholder="Masukkan alamat" id="manualAddress" style="width:100%; padding:10px;">';
+                document.getElementById('manualAddress').addEventListener('change', (e) => { destinationAddress = e.target.value; });
             }
         }
-
-        // ========== SUBMIT ORDER ==========
-        document.getElementById('submitOrder').addEventListener('click', async () => {
+        
+        // Status Warung
+        function loadStoreStatus() {
+            db.ref('Lapak Inayah/settings/isOpen').on('value', snap => {
+                storeOpen = snap.val() === true;
+                document.getElementById('storeStatus').innerHTML = storeOpen ? '<span style="color:#ffeaa7;">🟢 Buka</span>' : '<span style="color:#ffb8b8;">🔴 Tutup</span>';
+                const submitBtn = document.getElementById('submitOrder');
+                if(submitBtn) submitBtn.disabled = !storeOpen;
+            });
+        }
+        
+        // Submit Order dengan pembayaran
+        let pendingPayment = null;
+        function showPaymentModal() {
+            if(!storeOpen) { showToast("Warung sedang tutup"); return; }
+            const method = document.getElementById('paymentMethod').value;
+            if(method === 'cash') { submitOrder('cash'); return; }
+            pendingPayment = method;
+            const modal = document.getElementById('paymentModal');
+            const body = document.getElementById('paymentModalBody');
+            if(method === 'transfer') body.innerHTML = `<div class="payment-options"><div onclick="selectPayment('BCA')">BCA</div><div onclick="selectPayment('SEABANK')">SEABANK</div></div><div id="accInfo"></div>`;
+            else body.innerHTML = `<div class="payment-options"><div onclick="selectPayment('DANA')">DANA</div><div onclick="selectPayment('OVO')">OVO</div><div onclick="selectPayment('GOPAY')">GOPAY</div></div><div id="accInfo"></div>`;
+            modal.style.display = 'flex';
+        }
+        window.selectPayment = (opt) => {
+            let acc = '', owner = '';
+            if(opt === 'BCA') acc = '7975 459 489', owner = 'Iron Yusuf';
+            else if(opt === 'SEABANK') acc = '901282238378', owner = 'Iron Yusuf';
+            else if(opt === 'DANA') acc = '082411640444', owner = 'Fikram Yusuf';
+            else acc = '082311640444', owner = 'Iron Yusuf';
+            document.getElementById('accInfo').innerHTML = `<div>Nomor ${opt}: ${acc}<br>a.n. ${owner}<button onclick="copyText('${acc}')">Salin</button></div>`;
+            window.selectedPaymentOption = opt;
+        };
+        window.copyText = (text) => { navigator.clipboard.writeText(text); showToast("Nomor tersalin"); };
+        document.getElementById('paymentModalConfirm').onclick = () => {
+            if(pendingPayment !== 'cash' && !window.selectedPaymentOption) { alert("Pilih metode pembayaran"); return; }
+            submitOrder(pendingPayment, window.selectedPaymentOption);
+            document.getElementById('paymentModal').style.display = 'none';
+        };
+        document.getElementById('paymentModalClose').onclick = () => document.getElementById('paymentModal').style.display = 'none';
+        
+        function submitOrder(method, option=null) {
             const name = document.getElementById('customerName').value.trim();
             const phone = document.getElementById('customerPhone').value.trim();
-            if (!name || !phone) return alert('Harap isi nama dan nomor WhatsApp!');
-            if (!destinationCoord) return alert('Silakan pilih alamat tujuan terlebih dahulu!');
-            if (Object.keys(cart).length === 0) return alert('Keranjang Anda masih kosong!');
-
-            const subtotal = calculateSubtotal();
+            if(!name || !phone) { alert("Nama dan No WA wajib"); return; }
+            if(!destinationCoord) { alert("Pilih alamat tujuan dulu"); return; }
+            if(Object.keys(cart).length === 0) { alert("Keranjang kosong"); return; }
+            const subtotal = Object.values(cart).reduce((s,i)=> s + i.harga*i.qty, 0);
             const total = subtotal + calculatedDeliveryCost;
-
             const orderData = {
-                customer: {
-                    name: name,
-                    phone: phone,
-                    note: document.getElementById('customerNote').value.trim(),
-                    paymentMethod: document.getElementById('paymentMethod').value
-                },
+                customer: { name, phone, note: document.getElementById('customerNote').value, paymentMethod: method === 'cash' ? 'COD' : (method + (option ? ' '+option : '')) },
                 items: cart,
-                subtotal: subtotal,
-                deliveryCost: calculatedDeliveryCost,
-                total: total,
-                status: 'pending',
-                statusHistory: [{ status: 'pending', timestamp: Date.now(), description: 'Pesanan diterima' }],
-                timestamp: Date.now(),
-                orderDate: new Date().toLocaleString('id-ID'),
-                // Data alamat tujuan (asli dari autocomplete)
-                destination_address: destinationAddress,
-                destination_lat: destinationCoord.lat,
-                destination_lng: destinationCoord.lng,
-                // Data titik jemput tetap
-                pickup_address: "Lapak Inayah (Koordinat tetap)",
-                pickup_lat: PICKUP_COORD.lat,
-                pickup_lng: PICKUP_COORD.lng
+                subtotal, deliveryCost: calculatedDeliveryCost, total,
+                status: 'pending', statusHistory: [{ status:'pending', timestamp:Date.now(), description:'Pesanan diterima' }],
+                timestamp: Date.now(), orderDate: new Date().toLocaleString('id-ID'),
+                destination_address: destinationAddress, destination_lat: destinationCoord.lat, destination_lng: destinationCoord.lng,
+                pickup_address: "Lapak Inayah", pickup_lat: PICKUP_COORD.lat, pickup_lng: PICKUP_COORD.lng
             };
-
-            const orderId = 'WQ-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
-            try {
-                await database.ref(`Lapak Inayah/orders/${orderId}`).set(orderData);
-                await sendTelegramNotification(orderData, orderId);
-
-                document.getElementById('customerNameSuccess').textContent = name;
-                document.getElementById('orderId').textContent = orderId;
+            const orderId = 'WQ-' + Date.now() + '-' + Math.floor(Math.random()*1000);
+            db.ref(`Lapak Inayah/orders/${orderId}`).set(orderData).then(() => {
+                // Kurangi stok
+                const updates = {};
+                Object.entries(cart).forEach(([idx,item]) => {
+                    if(menu[idx]) updates[`Lapak Inayah/menu/${idx}/stock`] = (menu[idx].stock || 0) - item.qty;
+                });
+                if(Object.keys(updates).length) db.ref().update(updates);
+                showToast("Pesanan berhasil!");
+                document.getElementById('customerNameSuccess').innerText = name;
+                document.getElementById('orderId').innerText = orderId;
                 document.getElementById('successModal').style.display = 'flex';
-                localStorage.setItem('lapak_customer_phone', phone);
-                currentActivePhone = phone;
-                initActiveOrdersListener(phone);
-
-                // Reset
-                cart = {}; updateCart();
+                cart = {}; updateCartUI(); renderMenu();
                 document.getElementById('customerName').value = '';
                 document.getElementById('customerPhone').value = '';
                 document.getElementById('customerNote').value = '';
-                destinationCoord = null;
-                destinationAddress = '';
-                calculatedDeliveryCost = 0;
-                if (searchBox) {
-                    const inputElem = searchBox.querySelector('input');
-                    if (inputElem) inputElem.value = '';
-                }
-                document.getElementById('deliveryFeeInfo').innerHTML = '';
-                document.getElementById('deliveryCost').textContent = '0';
-                document.getElementById('total').textContent = '0';
+                destinationCoord = null; destinationAddress = '';
+                if(searchBox && searchBox.querySelector('input')) searchBox.querySelector('input').value = '';
+                localStorage.setItem('lapak_cart', '{}');
+                currentActivePhone = phone;
+                initActiveOrdersListener(phone);
                 document.getElementById('checkPhoneInput').value = phone;
-                menuData.forEach((_, i) => { if (document.getElementById(`qty-${i}`)) document.getElementById(`qty-${i}`).textContent = '0'; });
-                console.log("✅ Pesanan berhasil dibuat:", orderId);
-            } catch (err) {
-                console.error("❌ Gagal menyimpan pesanan:", err);
-                alert('Gagal mengirim pesanan. Cek koneksi atau hubungi admin.');
-            }
-        });
-
-        // ========== PESANAN AKTIF (REALTIME) ==========
+            }).catch(err => alert("Gagal: "+err.message));
+        }
+        
+        // Pesanan Aktif (realtime)
         function initActiveOrdersListener(phone) {
-            if (!phone) return;
-            if (activeOrdersListener) activeOrdersListener.off();
-            const ordersRef = database.ref('Lapak Inayah/orders');
-            activeOrdersListener = ordersRef.on('value', (snapshot) => {
-                const allOrders = snapshot.val() || {};
+            if(!phone) return;
+            if(activeOrdersListener) activeOrdersListener.off();
+            activeOrdersListener = db.ref('Lapak Inayah/orders').on('value', snap => {
+                const all = snap.val() || {};
+                const active = [];
+                for(let id in all) {
+                    const o = all[id];
+                    if(o.customer?.phone === phone && ['pending','processing','ready','delivering'].includes(o.status))
+                        active.push({ id, ...o });
+                }
+                active.sort((a,b)=>b.timestamp - a.timestamp);
                 const container = document.getElementById('activeOrdersContainer');
-                let active = [];
-                for (let id in allOrders) {
-                    const order = allOrders[id];
-                    if (order.customer && order.customer.phone === phone && 
-                        ['pending','processing','ready','delivering'].includes(order.status)) {
-                        active.push({ id, ...order });
-                        const prevStatus = previousOrderStatus[id];
-                        if (prevStatus && prevStatus !== order.status) {
-                            console.log(`🔔 Status pesanan ${id} berubah: ${prevStatus} → ${order.status}`);
-                            showStatusNotification(id, order.status);
-                        }
-                        previousOrderStatus[id] = order.status;
-                    } else {
-                        if (previousOrderStatus[id]) delete previousOrderStatus[id];
-                    }
-                }
-                active.sort((a,b) => b.timestamp - a.timestamp);
-                if (active.length === 0) {
-                    container.innerHTML = '<div class="no-orders"><i class="fas fa-check-circle"></i><p>Tidak ada pesanan aktif. Pesan sekarang!</p></div>';
-                    return;
-                }
-                container.innerHTML = renderOrderCards(active);
+                if(!active.length) { container.innerHTML = '<div class="no-data">Tidak ada pesanan aktif</div>'; return; }
+                container.innerHTML = renderOrdersHTML(active);
             });
         }
-
-        function renderOrderCards(orders) {
-            const statusText = { pending:'Menunggu Konfirmasi', processing:'Sedang Diproses', ready:'Siap Diantar', delivering:'Dalam Pengiriman', completed:'Selesai' };
+        function renderOrdersHTML(orders) {
+            const statusMap = { pending:'Menunggu', processing:'Diproses', ready:'Siap Diantar', delivering:'Dikirim', completed:'Selesai' };
             const statusClass = { pending:'status-pending', processing:'status-processing', ready:'status-ready', delivering:'status-delivering', completed:'status-completed' };
             let html = '';
-            orders.forEach(order => {
-                let itemsHTML = '';
-                Object.values(order.items).forEach(i => { if(i.qty>0) itemsHTML += `<div>${i.nama} x${i.qty} = Rp ${formatNumber(i.harga * i.qty)}</div>`; });
-                let timelineHTML = '';
-                const steps = [
-                    { id:'pending', icon:'fa-clock', title:'Pesanan Diterima', desc:'Pesanan Anda telah kami terima' },
-                    { id:'processing', icon:'fa-utensils', title:'Sedang Dimasak', desc:'Pesanan sedang diproses' },
-                    { id:'ready', icon:'fa-box', title:'Siap Diantar', desc:'Pesanan siap diantar' },
-                    { id:'delivering', icon:'fa-truck', title:'Dalam Pengiriman', desc:'Kurir dalam perjalanan' },
-                    { id:'completed', icon:'fa-check', title:'Pesanan Selesai', desc:'Pesanan telah sampai' }
-                ];
-                const statusIndex = ['pending','processing','ready','delivering','completed'].indexOf(order.status);
-                steps.forEach((step, idx) => {
-                    let iconClass = '';
-                    if (idx < statusIndex) iconClass = 'completed';
-                    else if (idx === statusIndex) iconClass = 'active';
-                    timelineHTML += `<div class="status-step"><div class="status-icon ${iconClass}"><i class="fas ${step.icon}"></i></div><div class="status-info"><h4>${step.title}</h4><p>${step.desc}</p></div></div>`;
+            orders.forEach(o => {
+                let itemsHtml = Object.values(o.items).map(i => `<div>${i.nama} x${i.qty}</div>`).join('');
+                let timeline = '';
+                const steps = ['pending','processing','ready','delivering','completed'];
+                const idx = steps.indexOf(o.status);
+                steps.forEach((s, i) => {
+                    let cls = i < idx ? 'completed' : (i === idx ? 'active' : '');
+                    timeline += `<div class="status-step"><div class="status-icon ${cls}"><i class="fas ${i===0?'fa-clock':i===1?'fa-utensils':i===2?'fa-box':i===3?'fa-truck':'fa-check'}"></i></div><div>${statusMap[s]}</div></div>`;
                 });
-                html += `<div class="order-card ${order.status}">
-                            <div class="order-header"><div><div class="order-id">${order.id}</div><div class="order-date">${order.orderDate}</div></div><div class="order-status ${statusClass[order.status]}">${statusText[order.status] || order.status}</div></div>
-                            <div class="order-items">${itemsHTML}</div>
-                            <div class="order-total">Total: Rp ${formatNumber(order.total)}</div>
-                            <div class="status-timeline">${timelineHTML}</div>
+                html += `<div class="order-card" style="border-left-color: #ff6b6b;">
+                            <div class="order-header"><div><strong>${o.id}</strong><br><small>${o.orderDate}</small></div><div class="order-status ${statusClass[o.status]}">${statusMap[o.status]}</div></div>
+                            <div class="order-items">${itemsHtml}</div>
+                            <div class="order-total">Total: Rp ${formatNumber(o.total)}</div>
+                            <div class="status-timeline">${timeline}</div>
                          </div>`;
             });
             return html;
         }
-
-        function showStatusNotification(orderId, newStatus) {
-            const statusText = {
-                pending: "Menunggu Konfirmasi",
-                processing: "Sedang Diproses",
-                ready: "Siap Diantar",
-                delivering: "Dalam Pengiriman",
-                completed: "Selesai"
-            };
-            const title = `📦 Pesanan ${orderId}`;
-            const body = `Status: ${statusText[newStatus] || newStatus}`;
-            console.log(`🔔 NOTIFIKASI: ${title} - ${body}`);
-            showToastMessage(`${title} - ${body}`);
-        }
-
-        function showToastMessage(message) {
-            const existingToast = document.querySelector('.toast-notif');
-            if (existingToast) existingToast.remove();
-            const toast = document.createElement('div');
-            toast.className = 'toast-notif';
-            toast.innerText = message;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
-
-        // ========== RIWAYAT LENGKAP ==========
-        async function checkHistoryOrders(phone) {
-            if (!phone) phone = document.getElementById('checkPhoneInput').value.trim();
-            if (!phone) return alert('Masukkan nomor WhatsApp terlebih dahulu');
-            const snapshot = await database.ref('Lapak Inayah/orders').once('value');
-            const allOrders = snapshot.val() || {};
-            let userOrders = [];
-            for (let id in allOrders) {
-                if (allOrders[id].customer && allOrders[id].customer.phone === phone) {
-                    userOrders.push({ id, ...allOrders[id] });
-                }
-            }
-            userOrders.sort((a,b) => b.timestamp - a.timestamp);
+        
+        // Riwayat
+        async function loadHistory(phone) {
+            if(!phone) phone = document.getElementById('checkPhoneInput').value.trim();
+            if(!phone) { alert("Masukkan nomor WA"); return; }
+            const snap = await db.ref('Lapak Inayah/orders').once('value');
+            const all = snap.val() || {};
+            const orders = [];
+            for(let id in all) if(all[id].customer?.phone === phone) orders.push({ id, ...all[id] });
+            orders.sort((a,b)=>b.timestamp - a.timestamp);
             const container = document.getElementById('orderHistoryContainer');
-            if (userOrders.length === 0) {
-                container.innerHTML = `<div class="no-orders"><p>Belum ada pesanan untuk nomor ${phone}</p></div>`;
-                return;
-            }
-            container.innerHTML = renderOrderCards(userOrders);
-            document.querySelector('.order-history-section').scrollIntoView({ behavior: 'smooth' });
+            if(!orders.length) { container.innerHTML = '<div class="no-data">Belum ada pesanan</div>'; return; }
+            container.innerHTML = renderOrdersHTML(orders);
         }
-
-        // ========== INISIALISASI ==========
+        
+        // Bottom Navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const tab = item.getAttribute('data-tab');
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                item.classList.add('active');
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById(tab+'Tab').classList.add('active');
+                if(tab === 'active' && currentActivePhone) initActiveOrdersListener(currentActivePhone);
+                if(tab === 'history') loadHistory(currentActivePhone || '');
+            });
+        });
+        
+        // Event Listeners
+        document.getElementById('submitOrder').addEventListener('click', showPaymentModal);
+        document.getElementById('getLocationBtn').addEventListener('click', getCurrentLocation);
+        document.getElementById('checkOrdersBtn').addEventListener('click', () => loadHistory());
+        document.getElementById('modalClose').addEventListener('click', () => document.getElementById('successModal').style.display = 'none');
+        document.getElementById('customerPhone').addEventListener('input', (e) => { currentActivePhone = e.target.value; document.getElementById('checkPhoneInput').value = e.target.value; });
+        
+        function showToast(msg) {
+            const toast = document.createElement('div'); toast.className = 'toast-notif'; toast.innerText = msg;
+            document.body.appendChild(toast); setTimeout(()=>toast.remove(), 3000);
+        }
+        
+        // Initialize
         window.onload = async () => {
             loadMenu();
-            const savedCart = localStorage.getItem('Lapak Inayah_cart');
-            if (savedCart) { cart = JSON.parse(savedCart); updateCart(); }
+            loadStoreStatus();
+            const savedCart = localStorage.getItem('lapak_cart');
+            if(savedCart) { cart = JSON.parse(savedCart); updateCartUI(); }
             const savedPhone = localStorage.getItem('lapak_customer_phone');
-            if (savedPhone) {
-                currentActivePhone = savedPhone;
-                initActiveOrdersListener(savedPhone);
-                document.getElementById('checkPhoneInput').value = savedPhone;
-                console.log("✅ Memuat pesanan aktif untuk nomor:", savedPhone);
-            } else {
-                document.getElementById('activeOrdersContainer').innerHTML = '<div class="no-orders"><i class="fas fa-info-circle"></i><p>Belum ada pesanan aktif. Silakan pesan terlebih dahulu.</p></div>';
-            }
-            document.getElementById('modalClose').addEventListener('click', () => document.getElementById('successModal').style.display = 'none');
-            document.getElementById('checkOrdersBtn').addEventListener('click', () => checkHistoryOrders());
-            document.getElementById('refreshActiveBtn').addEventListener('click', () => {
-                if (currentActivePhone) initActiveOrdersListener(currentActivePhone);
-                else alert('Belum ada nomor pesanan aktif. Silakan pesan terlebih dahulu.');
-            });
-            document.getElementById('customerPhone').addEventListener('input', (e) => document.getElementById('checkPhoneInput').value = e.target.value);
-            document.getElementById('viewOrdersFooter').addEventListener('click', (e) => {
-                e.preventDefault();
-                const phone = document.getElementById('customerPhone').value.trim() || localStorage.getItem('lapak_customer_phone');
-                if (phone) { document.getElementById('checkPhoneInput').value = phone; checkHistoryOrders(phone); }
-                else document.getElementById('checkPhoneInput').focus();
-            });
-            document.getElementById('contactUs').addEventListener('click', (e) => { e.preventDefault(); window.open('https://wa.me/6281234567890', '_blank'); });
-
-            // Inisialisasi autocomplete Mapbox
-            await initMapboxAutocomplete();
+            if(savedPhone) { currentActivePhone = savedPhone; initActiveOrdersListener(savedPhone); document.getElementById('checkPhoneInput').value = savedPhone; }
+            await initMapbox();
         };
     </script>
 </body>
