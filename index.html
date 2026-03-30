@@ -68,7 +68,7 @@
         .menu-image { width: 100%; height: 120px; object-fit: cover; }
         .menu-info { padding: 12px; }
         .menu-info h3 { font-size: 1rem; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .menu-info p { font-size: 0.75rem; color: #666; display: none; }
+        .menu-info p { font-size: 0.75rem; color: #666; margin-top: 4px; } /* diubah dari display: none */
         .menu-price { color: #ee5a24; font-weight: bold; font-size: 1rem; margin: 5px 0; }
         .stock-badge { font-size: 0.7rem; color: #e74c3c; margin-left: 5px; }
         .menu-actions { display: flex; flex-direction: column; gap: 8px; }
@@ -236,13 +236,69 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // Konfigurasi Telegram
+        const TELEGRAM_BOT_TOKEN = "8792810774:AAFZq0Va9XuyWITnnunIx5KvDTfhYSIXRp0";
+        const TELEGRAM_CHAT_ID = "1215039026";
+
+        async function sendTelegramNotification(order, orderId) {
+            if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
+                console.warn("Token atau Chat ID Telegram tidak dikonfigurasi.");
+                return;
+            }
+            let itemsText = "";
+            if (order.items) {
+                for (const key in order.items) {
+                    const item = order.items[key];
+                    if (item && item.qty > 0) {
+                        itemsText += `- ${item.nama} x${item.qty} = Rp ${(item.harga * item.qty).toLocaleString()}\n`;
+                    }
+                }
+            }
+            const message = `
+🆕 <b>PESANAN BARU!</b>
+
+🆔 <b>Order ID:</b> ${orderId}
+👤 <b>Nama:</b> ${order.customer?.name || "-"}
+📞 <b>No. WA:</b> ${order.customer?.phone || "-"}
+🏠 <b>Alamat Tujuan:</b> ${order.destination_address || "-"}
+📍 <b>Koordinat Tujuan:</b> ${order.destination_lat || "-"}, ${order.destination_lng || "-"}
+💳 <b>Metode:</b> ${order.customer?.paymentMethod === "cash" ? "COD" : (order.customer?.paymentMethod || "-").toUpperCase()}
+📝 <b>Catatan:</b> ${order.customer?.note || "-"}
+
+🍽️ <b>Detail Pesanan:</b>
+${itemsText || "- Tidak ada item"}
+
+💰 <b>Total:</b> Rp ${(order.total || 0).toLocaleString()}
+            `;
+            const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+            try {
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        chat_id: TELEGRAM_CHAT_ID,
+                        text: message,
+                        parse_mode: "HTML"
+                    })
+                });
+                if (response.ok) {
+                    console.log(`✅ Notifikasi Telegram terkirim untuk order ${orderId}`);
+                } else {
+                    const error = await response.text();
+                    console.error(`❌ Gagal kirim Telegram: ${error}`);
+                }
+            } catch (err) {
+                console.error("❌ Error saat mengirim ke Telegram:", err);
+            }
+        }
+
         let menu = [];
         let cart = {};
         let destinationCoord = null;
         let destinationAddress = "";
         let calculatedDeliveryCost = 0;
         let currentActivePhone = null;
-        let activeOrdersListener = null;
+        let activeOrdersUnsubscribe = null;
         let mapboxToken = null;
         let searchBox = null;
         let storeOpen = true;
@@ -271,13 +327,21 @@
             else document.getElementById('deliveryFeeInfo').innerHTML = '';
         }
         
-        // Load menu dengan stok
+        // Load menu dengan konversi ke array jika data berbentuk object
         function loadMenu() {
             db.ref('Lapak Inayah/menu').on('value', snap => {
-                menu = snap.val() || [];
+                const data = snap.val();
+                if (Array.isArray(data)) {
+                    menu = data;
+                } else if (data && typeof data === 'object') {
+                    menu = Object.values(data);
+                } else {
+                    menu = [];
+                }
                 renderMenu();
             });
         }
+        
         function renderMenu() {
             const container = document.getElementById('menuContainer');
             if(!menu.length) { container.innerHTML = '<div class="no-data">Menu kosong</div>'; return; }
@@ -286,6 +350,7 @@
                     <img src="${item.gambar || 'https://via.placeholder.com/300x160'}" class="menu-image">
                     <div class="menu-info">
                         <h3>${item.nama} ${item.stock === 0 ? '<span class="stock-badge">(Habis)</span>' : ''}</h3>
+                        <p>${escapeHtml(item.deskripsi) || '-'}</p>
                         <div class="menu-price">Rp ${formatNumber(item.harga)}</div>
                         <div class="menu-actions">
                             <div class="quantity-control">
@@ -299,6 +364,17 @@
                 </div>
             `).join('');
         }
+
+        function escapeHtml(str) {
+            if(!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if(m === '&') return '&amp;';
+                if(m === '<') return '&lt;';
+                if(m === '>') return '&gt;';
+                return m;
+            });
+        }
+        
         window.changeQty = (idx, delta) => {
             if(!menu[idx]) return;
             let qty = (cart[idx]?.qty || 0) + delta;
@@ -309,6 +385,7 @@
             document.getElementById(`qty-${idx}`).innerText = qty || 0;
             updateCartUI();
         };
+        
         window.addToCart = (idx) => {
             if(!storeOpen) { showToast("Warung sedang tutup, tidak bisa memesan"); return; }
             if(menu[idx].stock === 0) { showToast("Maaf, produk habis"); return; }
@@ -319,6 +396,7 @@
             updateCartUI();
             showToast(`${menu[idx].nama} ditambahkan (${qty})`);
         };
+        
         function updateCartUI() {
             const container = document.getElementById('cartItems');
             let totalItems = 0, subtotal = 0;
@@ -335,6 +413,7 @@
             updateDeliveryDisplay();
             localStorage.setItem('lapak_cart', JSON.stringify(cart));
         }
+        
         window.removeFromCart = (id) => { delete cart[id]; updateCartUI(); renderMenu(); };
         
         // Ambil lokasi GPS
@@ -344,7 +423,6 @@
                 const lat = pos.coords.latitude;
                 const lng = pos.coords.longitude;
                 destinationCoord = { lat, lng };
-                // Reverse geocode dengan Mapbox
                 if(mapboxToken) {
                     const res = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapboxToken}&language=id`);
                     const data = await res.json();
@@ -377,7 +455,7 @@
                 searchBox.placeholder = 'Cari alamat...';
                 searchBox.addEventListener('retrieve', (e) => {
                     const feat = e.detail;
-                    let coords = null, name = '';
+                    let coords = null;
                     if(feat && feat.geometry) coords = feat.geometry.coordinates;
                     else if(feat.features && feat.features[0]) coords = feat.features[0].geometry.coordinates;
                     if(coords) {
@@ -408,6 +486,8 @@
         
         // Submit Order dengan pembayaran
         let pendingPayment = null;
+        let selectedPaymentOption = null;
+        
         function showPaymentModal() {
             if(!storeOpen) { showToast("Warung sedang tutup"); return; }
             const method = document.getElementById('paymentMethod').value;
@@ -415,10 +495,14 @@
             pendingPayment = method;
             const modal = document.getElementById('paymentModal');
             const body = document.getElementById('paymentModalBody');
-            if(method === 'transfer') body.innerHTML = `<div class="payment-options"><div onclick="selectPayment('BCA')">BCA</div><div onclick="selectPayment('SEABANK')">SEABANK</div></div><div id="accInfo"></div>`;
-            else body.innerHTML = `<div class="payment-options"><div onclick="selectPayment('DANA')">DANA</div><div onclick="selectPayment('OVO')">OVO</div><div onclick="selectPayment('GOPAY')">GOPAY</div></div><div id="accInfo"></div>`;
+            if(method === 'transfer') {
+                body.innerHTML = `<div class="payment-options"><div onclick="selectPayment('BCA')">BCA</div><div onclick="selectPayment('SEABANK')">SEABANK</div></div><div id="accInfo"></div>`;
+            } else {
+                body.innerHTML = `<div class="payment-options"><div onclick="selectPayment('DANA')">DANA</div><div onclick="selectPayment('OVO')">OVO</div><div onclick="selectPayment('GOPAY')">GOPAY</div></div><div id="accInfo"></div>`;
+            }
             modal.style.display = 'flex';
         }
+        
         window.selectPayment = (opt) => {
             let acc = '', owner = '';
             if(opt === 'BCA') acc = '7975 459 489', owner = 'Iron Yusuf';
@@ -426,15 +510,24 @@
             else if(opt === 'DANA') acc = '082411640444', owner = 'Fikram Yusuf';
             else acc = '082311640444', owner = 'Iron Yusuf';
             document.getElementById('accInfo').innerHTML = `<div>Nomor ${opt}: ${acc}<br>a.n. ${owner}<button onclick="copyText('${acc}')">Salin</button></div>`;
-            window.selectedPaymentOption = opt;
+            selectedPaymentOption = opt;
         };
+        
         window.copyText = (text) => { navigator.clipboard.writeText(text); showToast("Nomor tersalin"); };
+        
         document.getElementById('paymentModalConfirm').onclick = () => {
-            if(pendingPayment !== 'cash' && !window.selectedPaymentOption) { alert("Pilih metode pembayaran"); return; }
-            submitOrder(pendingPayment, window.selectedPaymentOption);
+            if(pendingPayment !== 'cash' && !selectedPaymentOption) { alert("Pilih metode pembayaran"); return; }
+            submitOrder(pendingPayment, selectedPaymentOption);
             document.getElementById('paymentModal').style.display = 'none';
+            selectedPaymentOption = null;
+            pendingPayment = null;
         };
-        document.getElementById('paymentModalClose').onclick = () => document.getElementById('paymentModal').style.display = 'none';
+        
+        document.getElementById('paymentModalClose').onclick = () => {
+            document.getElementById('paymentModal').style.display = 'none';
+            selectedPaymentOption = null;
+            pendingPayment = null;
+        };
         
         function submitOrder(method, option=null) {
             const name = document.getElementById('customerName').value.trim();
@@ -454,7 +547,8 @@
                 pickup_address: "Lapak Inayah", pickup_lat: PICKUP_COORD.lat, pickup_lng: PICKUP_COORD.lng
             };
             const orderId = 'WQ-' + Date.now() + '-' + Math.floor(Math.random()*1000);
-            db.ref(`Lapak Inayah/orders/${orderId}`).set(orderData).then(() => {
+            db.ref(`Lapak Inayah/orders/${orderId}`).set(orderData).then(async () => {
+                await sendTelegramNotification(orderData, orderId);
                 // Kurangi stok
                 const updates = {};
                 Object.entries(cart).forEach(([idx,item]) => {
@@ -472,36 +566,46 @@
                 destinationCoord = null; destinationAddress = '';
                 if(searchBox && searchBox.querySelector('input')) searchBox.querySelector('input').value = '';
                 localStorage.setItem('lapak_cart', '{}');
+                localStorage.setItem('lapak_customer_phone', phone);
                 currentActivePhone = phone;
                 initActiveOrdersListener(phone);
                 document.getElementById('checkPhoneInput').value = phone;
             }).catch(err => alert("Gagal: "+err.message));
         }
         
-        // Pesanan Aktif (realtime)
+        // Pesanan Aktif (realtime) dengan detach yang benar
         function initActiveOrdersListener(phone) {
             if(!phone) return;
-            if(activeOrdersListener) activeOrdersListener.off();
-            activeOrdersListener = db.ref('Lapak Inayah/orders').on('value', snap => {
+            if(activeOrdersUnsubscribe) {
+                activeOrdersUnsubscribe();
+                activeOrdersUnsubscribe = null;
+            }
+            activeOrdersUnsubscribe = db.ref('Lapak Inayah/orders').on('value', snap => {
                 const all = snap.val() || {};
                 const active = [];
                 for(let id in all) {
                     const o = all[id];
-                    if(o.customer?.phone === phone && ['pending','processing','ready','delivering'].includes(o.status))
+                    if(o.customer && o.customer.phone === phone && ['pending','processing','ready','delivering'].includes(o.status)) {
                         active.push({ id, ...o });
+                    }
                 }
                 active.sort((a,b)=>b.timestamp - a.timestamp);
                 const container = document.getElementById('activeOrdersContainer');
-                if(!active.length) { container.innerHTML = '<div class="no-data">Tidak ada pesanan aktif</div>'; return; }
+                if(!active.length) { 
+                    container.innerHTML = '<div class="no-data">Tidak ada pesanan aktif</div>'; 
+                    return; 
+                }
                 container.innerHTML = renderOrdersHTML(active);
             });
         }
+        
         function renderOrdersHTML(orders) {
             const statusMap = { pending:'Menunggu', processing:'Diproses', ready:'Siap Diantar', delivering:'Dikirim', completed:'Selesai' };
             const statusClass = { pending:'status-pending', processing:'status-processing', ready:'status-ready', delivering:'status-delivering', completed:'status-completed' };
             let html = '';
             orders.forEach(o => {
-                let itemsHtml = Object.values(o.items).map(i => `<div>${i.nama} x${i.qty}</div>`).join('');
+                let itemsArray = Object.values(o.items).filter(i => i && i.qty > 0);
+                let itemsHtml = itemsArray.map(i => `<div>${i.nama} x${i.qty}</div>`).join('');
                 let timeline = '';
                 const steps = ['pending','processing','ready','delivering','completed'];
                 const idx = steps.indexOf(o.status);
@@ -526,7 +630,7 @@
             const snap = await db.ref('Lapak Inayah/orders').once('value');
             const all = snap.val() || {};
             const orders = [];
-            for(let id in all) if(all[id].customer?.phone === phone) orders.push({ id, ...all[id] });
+            for(let id in all) if(all[id].customer && all[id].customer.phone === phone) orders.push({ id, ...all[id] });
             orders.sort((a,b)=>b.timestamp - a.timestamp);
             const container = document.getElementById('orderHistoryContainer');
             if(!orders.length) { container.innerHTML = '<div class="no-data">Belum ada pesanan</div>'; return; }
@@ -551,7 +655,10 @@
         document.getElementById('getLocationBtn').addEventListener('click', getCurrentLocation);
         document.getElementById('checkOrdersBtn').addEventListener('click', () => loadHistory());
         document.getElementById('modalClose').addEventListener('click', () => document.getElementById('successModal').style.display = 'none');
-        document.getElementById('customerPhone').addEventListener('input', (e) => { currentActivePhone = e.target.value; document.getElementById('checkPhoneInput').value = e.target.value; });
+        document.getElementById('customerPhone').addEventListener('input', (e) => { 
+            currentActivePhone = e.target.value; 
+            document.getElementById('checkPhoneInput').value = e.target.value; 
+        });
         
         function showToast(msg) {
             const toast = document.createElement('div'); toast.className = 'toast-notif'; toast.innerText = msg;
@@ -563,9 +670,16 @@
             loadMenu();
             loadStoreStatus();
             const savedCart = localStorage.getItem('lapak_cart');
-            if(savedCart) { cart = JSON.parse(savedCart); updateCartUI(); }
+            if(savedCart) { 
+                cart = JSON.parse(savedCart); 
+                updateCartUI(); 
+            }
             const savedPhone = localStorage.getItem('lapak_customer_phone');
-            if(savedPhone) { currentActivePhone = savedPhone; initActiveOrdersListener(savedPhone); document.getElementById('checkPhoneInput').value = savedPhone; }
+            if(savedPhone) { 
+                currentActivePhone = savedPhone; 
+                initActiveOrdersListener(savedPhone); 
+                document.getElementById('checkPhoneInput').value = savedPhone; 
+            }
             await initMapbox();
         };
     </script>
