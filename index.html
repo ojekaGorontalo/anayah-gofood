@@ -407,7 +407,7 @@ ${itemsText || "- Tidak ada item"}
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         }
         function calculateDeliveryCost(distanceKm) { 
-            let cost = distanceKm <= 4 ? 10000 : 10000 + Math.round((distanceKm - 4) * 2500);
+            let cost = distanceKm <= 4 ? 5000 : 5000 + Math.round((distanceKm - 4) * 2500);
             return Math.floor(cost / 1000) * 1000;
         }
         function updateDeliveryDisplay() {
